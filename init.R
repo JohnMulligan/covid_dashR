@@ -11,8 +11,8 @@
               # packages go here
               install.packages('remotes')
               install.packages('surveillance')
-              install.packages('dplyr')
+              install.packages('plyr')
               install.packages('dash')
               install.packages('tidyr')
-              install.packages('r')
+              install.packages('readr')
               remotes::install_github('plotly/dashR', upgrade=TRUE)
