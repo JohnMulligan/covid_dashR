@@ -163,42 +163,78 @@ app$callback(
 			counts_filtered<-counts_filtered[,!colnames(counts_filtered) %in% c('Week Ending Date','Type','Jurisdiction','State Abbreviation','Cause Subgroup','Time Period','Suppress','Note','Average Number of Deaths in Time Period','Difference from 2015-2019 to 2020','Percent Difference from 2015-2019 to 2020')]
 			counts_wider = pivot_wider(counts_filtered,names_from=`Cause Group`,values_from='Number of Deaths',values_fn=(`Cause Group`=sum))
 			counts_wider[is.na(counts_wider)]<-0
-			start<-c(min(counts_wider[,'Year']),min(counts_wider[,'Week']))
 			end<-dim(counts_wider)[1]
-			print(end)
 			freq<-max(counts_wider[,'Week'])
 			#but "observed" must be a numeric matrix
 			numeric_data<-data.matrix(counts_wider)[order(counts_wider[,'Year'],counts_wider[,'Week']),]
 			numeric_data<-numeric_data[,!colnames(numeric_data) %in% c('Week','Year')]
 			#strip out now-extraneous columns
 			#numeric_data<-numeric_data[,'Number of Deaths']
-			sts <- new("sts",epoch=1:end,start=start,freq=52,observed=numeric_data)
-			cntrlFar <- list(range=start_idx:end_idx,w=w,b=b,alpha=alpha)
-			surveil_sts_far <- farrington(sts,control=cntrlFar)
-			far_df<-tidy.sts(surveil_sts_far)
+			start<-c(min(counts_wider[,'Year']),min(counts_wider[,'Week']))
+			sts <- new("sts",epoch=1:end,freq=52,start=start,observed=numeric_data)
+			print(start_idx)
+			print(end_idx)
+			title_str<-paste(c(cause,"mortality in",jurisdiction),collapse=" ")
+			if(end<end_idx){
+				gap<-end_idx - start_idx
+				end_idx<-end
+				if(start_idx>end_idx){
+					start_idx<-max(1,end_idx-gap)
+				}
+				print(start_idx)
+				print(end_idx)
+				title_str<-paste(c(title_str,"**data is sparse here**"),collapse=" ")
+			}
+			cntrlFar <- list(range=start_idx:end_idx,start=start,w=w,b=b,alpha=alpha)
+			result = tryCatch({
+				surveil_sts_far <- farrington(sts,control=cntrlFar)
+				far_df<-tidy.sts(surveil_sts_far)
 
-		list(
-			layout=list(
-				title=paste(c(cause,"mortality in",jurisdiction),collapse=" "),
-				xaxis=list('title'='Week Ending Date'),
-				yaxis=list('title'='Deaths'),
-				paper_bgcolor = '#c3d1e8'
-			),
-			data = list(
-				list(
-					x=far_df$date,
-					y=far_df$observed,
-					type='bar',
-					name=paste(c(weighted,"Deaths Count"),collapse=" ")
-				),
-				list(
-					x=far_df$date,
-					y=far_df$upperbound,
-					type='scatter',
-					name=cistring
-				)
+
+                list(
+                        layout=list(
+                                title=title_str,
+                                xaxis=list('title'='Week Ending Date'),
+                                yaxis=list('title'='Deaths'),
+                                paper_bgcolor = '#c3d1e8'
+                        ),
+                        data = list(
+                                list(
+                                        x=far_df$date,
+                                        y=far_df$observed,
+                                        type='bar',
+                                        name=paste(c(weighted,"Deaths Count"),collapse=" ")
+                                ),
+                                list(
+                                        x=far_df$date,
+                                        y=far_df$upperbound,
+                                        type='scatter',
+                                        name=cistring
+                                )
+                        )
+                )
+
+
+
+			}, error = function(e) {
+				print("ERROR ERROR ERROR")
+
+
+                list(
+                        layout=list(
+                                title="DATA TOO SPARSE TO RENDER GRAPH WITH THESE SPECIFIC PARAMETERS",
+                                xaxis=list('title'='Week Ending Date'),
+                                yaxis=list('title'='Deaths'),
+                                paper_bgcolor = '#c3d1e8'
+                        ),
+                        data = list(
+                        )
+                )
+
+
+			}
 			)
-		)
+
 	}
 )
 
