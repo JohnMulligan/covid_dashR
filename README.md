@@ -15,3 +15,4 @@ Rscript farrington_bystate_dash.R
 
 This includes some Heroku files as well, as I prepare for deployment.
 
+![dash1](https://raw.githubusercontent.com/JohnMulligan/covid_dashR/master/Screen%20Shot%202020-11-18%20at%209.21.30%20PM.png)
