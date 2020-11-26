@@ -16,4 +16,5 @@
               install.packages('dash')
               install.packages('tidyr')
               install.packages('readr')
-              remotes::install_github('plotly/dashR', upgrade=TRUE)
+              install.packages('plotly')
+		remotes::install_github('plotly/dashR', upgrade=TRUE)

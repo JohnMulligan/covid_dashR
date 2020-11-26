@@ -1,4 +1,4 @@
-
+library(plotly)
 library(dash)
 library(dashCoreComponents)
 library(dashHtmlComponents)
@@ -9,12 +9,14 @@ library(tidyr)
 library(dplyr)
 
 app<-Dash$new()
-
+fig<-plot_ly()
 
 w<-1
 nfreq<-52
-max_steps_back<-52
-steps_back<-30
+#can't go back more than a year without breaking my fragile averaging function at the bottom
+##please, fix it! (or, better, put: lowerbound and mean in sts surveillance farrington)
+max_steps_back<-51
+steps_back<-40
 
 counts <- read_csv("Weekly_counts_of_death_by_jurisdiction_and_cause_of_death.csv")
 week_ending_dates<-unique(counts$`Week Ending Date`[order(counts$Year,counts$Week)])
@@ -22,27 +24,22 @@ week_ending_dates<-unique(counts$`Week Ending Date`[order(counts$Year,counts$Wee
 steps_back_slider_opts<-list()
 idx<-0
 wed<-week_ending_dates[(length(week_ending_dates)-max_steps_back):length(week_ending_dates)]
-print(wed)
 for(i in wed){
 	d<-as.Date(i,origin='1970-01-01')
 	steps_back_slider_opts[[length(steps_back_slider_opts)+1]]<-list(label=d,value=idx)
 	idx<-idx+1
 }
 
-print(steps_back_slider_opts)
 
 stepsback_sliderlabels<-list()
 min_start_idx<-length(week_ending_dates)-max_steps_back
 max_end_idx<-length(week_ending_dates)
 
-print(min_start_idx)
-print(max_end_idx)
 
 for(i in min_start_idx:max_end_idx){
 	stepsback_sliderlabels[[i]]<-week_ending_dates[i]
 }
 
-print(stepsback_sliderlabels)
 
 
 causes<-unique(counts$`Cause Group`)
@@ -75,7 +72,7 @@ app$layout(
 	htmlDiv(list(
 
 	htmlDiv(list(
-			dccGraph(id='fizz',figure=list())
+			dccGraph(id='fizz',figure=fig)
 		)),
 	htmlDiv(
 		list(
@@ -149,13 +146,8 @@ app$callback(
 	function(cause,jurisdiction,weighted,ci_raw,b,wb) {
 		start_idx<-wb[[1]]
 		end_idx<-wb[[2]]
-		print(cause)
-		print(jurisdiction)
-		print(weighted)
 		cistring<-paste(c(as.character(ci_raw),"% CI Upper Bound of ",as.character(b),"-Year Trend"),collapse="")
-		print(cistring)
 		alpha<-1.00-ci_raw/100
-		print(alpha)
 		
 		counts_filtered<-filter(counts,Type==weighted)
 		counts_filtered<-filter(counts_filtered,`Jurisdiction` == jurisdiction)
@@ -173,45 +165,72 @@ app$callback(
 		#numeric_data<-numeric_data[,'Number of Deaths']
 		start<-c(min(counts_wider[,'Year']),min(counts_wider[,'Week']))
 		sts <- new("sts",epoch=1:end,freq=52,start=start,observed=numeric_data)
-		print(start_idx)
-		print(end_idx)
-		title_str<-paste(c(cause,"mortality in",jurisdiction),collapse=" ")
+		title_str<-paste(c(cause,"-coded"," mortality in ",jurisdiction),collapse="")
+		#Sparse data creates a couple problems:
+		##1) not all jurisdictions have the most recent weeks -- indeed, they may not have data going way back. I address for this by comparing the indices against the data frame size after the jurisdiction and cause filters have been applied. When mismatches like this occur, I add a note to the graph's title.
+		##2) the other problem is harder to catch -- insufficient data for the farrington algorithm to work. I use an error handler for that, and throw back an empty graph
 		if(end<end_idx){
 			gap<-end_idx - start_idx
 			end_idx<-end
 			if(start_idx>end_idx){
 				start_idx<-max(1,end_idx-gap)
 			}
-			print(start_idx)
-			print(end_idx)
 			title_str<-paste(c(title_str,"**data is sparse here**"),collapse=" ")
 		}
 		cntrlFar <- list(range=start_idx:end_idx,start=start,w=w,b=b,alpha=alpha)
+		fig <- plot_ly()
+		y_axis_title<-paste(c("Deaths: X's mark 'outbreaks' with ",as.character(ci_raw),"% certainty"),collapse="")
+
+
 		result = tryCatch({
 			surveil_sts_far <- farrington(sts,control=cntrlFar)
 			far_df<-tidy.sts(surveil_sts_far)
-			list(
- 				layout=list(
+
+			week_averages<-list()
+			for(week in unique(far_df$epochInYear)){
+				t<-filter(counts_wider,Week==week)
+				a<-t%>%slice((nrow(t)-b):(nrow(t)-1))
+				r<-mean(a%>%pull(cause))
+				week_averages[[length(week_averages)+1]]<-r
+			}
+			wkavg<-as.numeric(unlist(week_averages))
+
+			weds<-far_df$date
+
+			obs<-far_df$observed
+			upperb<-far_df$upperbound
+			excess<-obs-wkavg
+			excess[excess<0]<-0
+
+			obs<-obs-excess
+			alarms<-far_df$alarm
+			alarms_text<-list()
+ 			for(a in alarms){
+ 				if(a==1){alarm_text<-"X"}
+				else{alarm_text<-""}
+				alarms_text[[length(alarms_text)+1]]<-alarm_text
+			}
+			fig <- fig %>% layout(
  				title=title_str,
 				xaxis=list('title'='Week Ending Date'),
-				yaxis=list('title'='Deaths'),
-				paper_bgcolor = '#c3d1e8'
-			),
-			data = list(
-				list(
-					x=far_df$date,
-					y=far_df$observed,
-					type='bar',
-					name=paste(c(weighted,"Deaths Count"),collapse=" ")
-				),
-				list(
-					x=far_df$date,
-					y=far_df$upperbound,
- 					type='scatter',
-					name=cistring
-				)
+				yaxis=list('title'=y_axis_title),
+				paper_bgcolor = '#c3d1e8',
+				barmode='stack'
 			)
-                )
+			fig <- fig %>% add_trace(
+				x=weds,
+				y=wkavg,
+				text=alarms_text,
+				textposition="inside",
+				type='bar',
+				name=paste(c(as.character(b),"-year Average"),collapse="")
+			)
+			fig <- fig %>% add_trace(
+				x=weds,
+				y=excess,
+ 				type='bar',
+				name=paste(c(weighted," mortality in excess of ",as.character(b),"-year Average"),collapse="")
+			)
 		}, error = function(e) {
 			print("ERROR ERROR ERROR")
  			list(
