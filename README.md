@@ -21,5 +21,5 @@ This includes some Heroku files as well, for deployment.
 * Write-up at http://www.johncmulligan.net/blog/2020/11/26/excess-mortality-and-covid-19/
 * App currently live at http://covid-nchs-dash-r.herokuapp.com/
 
-![dash1](https://raw.githubusercontent.com/JohnMulligan/covid_dashR/flagged_and_stacked/Screen%20Shot%202020-11-19%20at%2010.01.26%20PM.png)
+![dash1](https://raw.githubusercontent.com/JohnMulligan/covid_dashR/master/Screen%20Shot%202020-11-25%20at%208.30.25%20PM.png)
 
