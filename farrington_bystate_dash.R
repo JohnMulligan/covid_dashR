@@ -42,7 +42,7 @@ for(i in min_start_idx:max_end_idx){
 
 
 
-causes<-unique(counts$`Cause Group`)
+causes<-unique(counts$`Cause Subgroup`)
 cause_dropdown_opts<-list()
 for(i in causes){
 	cause_dropdown_opts[[length(cause_dropdown_opts)+1]]<-list(label=i,value=i)
@@ -151,10 +151,10 @@ app$callback(
 		
 		counts_filtered<-filter(counts,Type==weighted)
 		counts_filtered<-filter(counts_filtered,`Jurisdiction` == jurisdiction)
-		counts_filtered<-filter(counts_filtered,`Cause Group` == cause)
+		counts_filtered<-filter(counts_filtered,`Cause Subgroup` == cause)
 		#remove extraneous columns
-		counts_filtered<-counts_filtered[,!colnames(counts_filtered) %in% c('Week Ending Date','Type','Jurisdiction','State Abbreviation','Cause Subgroup','Time Period','Suppress','Note','Average Number of Deaths in Time Period','Difference from 2015-2019 to 2020','Percent Difference from 2015-2019 to 2020')]
-		counts_wider = pivot_wider(counts_filtered,names_from=`Cause Group`,values_from='Number of Deaths',values_fn=(`Cause Group`=sum))
+		counts_filtered<-counts_filtered[,!colnames(counts_filtered) %in% c('Week Ending Date','Type','Jurisdiction','State Abbreviation','Cause Group','Time Period','Suppress','Note','Average Number of Deaths in Time Period','Difference from 2015-2019 to 2020','Percent Difference from 2015-2019 to 2020')]
+		counts_wider = pivot_wider(counts_filtered,names_from=`Cause Subgroup`,values_from='Number of Deaths',values_fn=(`Cause Subgroup`=sum))
 		counts_wider[is.na(counts_wider)]<-0
 		end<-dim(counts_wider)[1]
 		freq<-max(counts_wider[,'Week'])
