@@ -17,7 +17,7 @@ Rscript farrington_bystate_dash.R
 
 This includes some Heroku files as well, for deployment.
 
-* Data last updated Nov. 25
+* Data last updated Jan 6
 * Write-up at http://www.johncmulligan.net/blog/2020/11/26/excess-mortality-and-covid-19/
 * App currently live at http://covid-nchs-dash-r2.herokuapp.com/
 
