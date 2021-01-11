@@ -54,6 +54,8 @@ for(i in jurisdictions){
 	jurisdiction_dropdown_opts[[length(jurisdiction_dropdown_opts)+1]]<-list(label=i,value=i)
 }
 
+excess_radio_opts<-list(list(label='Farrington CI Upperbound',value='Farrington'),list(label='Average',value='Average'))
+
 weighted_opts<-unique(counts$`Type`)
 weighted_radio_opts<-list()
 for(i in weighted_opts){
@@ -87,15 +89,25 @@ app$layout(
 				id = 'jurisdiction_dropdown',
 				options = jurisdiction_dropdown_opts,
 				value = "Texas"
-			),
-			htmlLabel('Weighted or Raw Counts'),
+			)
+		),style=list('columnCount'=2,'width'='100%','marginTop'=15,'marginBottom'=15)
+	),
+	htmlDiv(
+                list(
+                        htmlLabel('Weighted or Raw Counts'),
                         dccRadioItems(
                                 id = 'weighted_radio',
                                 options = weighted_radio_opts,
                                 value = "Unweighted"
+                        ),
+                        htmlLabel('Measure of Excess'),
+                        dccRadioItems(
+                                id = 'excess_radio',
+                                options = excess_radio_opts,
+                                value = 'Farrington'
                         )
-		),style=list('columnCount'=3,'width'='100%','marginTop'=15,'marginBottom'=15)
-	),
+                ),style=list('columnCount'=2,'width'='100%','marginTop'=15,'marginBottom'=15)
+        ),
 	htmlDiv(
 		list(
 			htmlLabel('Confidence Interval on Trend'),
@@ -141,108 +153,21 @@ app$callback(
 		input(id='weighted_radio',property='value'),
 		input(id='ci_slider',property='value'),
 		input(id='yearsback_slider',property='value'),
-		input(id='weeks_slider',property='value')
+		input(id='weeks_slider',property='value'),
+		input(id='excess_radio',property='value')
 	),
-	function(cause,jurisdiction,weighted,ci_raw,b,wb) {
-		start_idx<-wb[[1]]
-		end_idx<-wb[[2]]
-		cistring<-paste(c(as.character(ci_raw),"% CI Upper Bound of ",as.character(b),"-Year Trend"),collapse="")
-		alpha<-1.00-ci_raw/100
-		
-		counts_filtered<-filter(counts,Type==weighted)
-		counts_filtered<-filter(counts_filtered,`Jurisdiction` == jurisdiction)
-		counts_filtered<-filter(counts_filtered,`Cause Subgroup` == cause)
-		#remove extraneous columns
-		counts_filtered<-counts_filtered[,!colnames(counts_filtered) %in% c('Week Ending Date','Type','Jurisdiction','State Abbreviation','Cause Group','Time Period','Suppress','Note','Average Number of Deaths in Time Period','Difference from 2015-2019 to 2020','Percent Difference from 2015-2019 to 2020')]
-		counts_wider = pivot_wider(counts_filtered,names_from=`Cause Subgroup`,values_from='Number of Deaths',values_fn=(`Cause Subgroup`=sum))
-		counts_wider[is.na(counts_wider)]<-0
-		end<-dim(counts_wider)[1]
-		freq<-max(counts_wider[,'Week'])
-		#but "observed" must be a numeric matrix
-		numeric_data<-data.matrix(counts_wider)[order(counts_wider[,'Year'],counts_wider[,'Week']),]
-		numeric_data<-numeric_data[,!colnames(numeric_data) %in% c('Week','Year')]
-		#strip out now-extraneous columns
-		#numeric_data<-numeric_data[,'Number of Deaths']
-		start<-c(min(counts_wider[,'Year']),min(counts_wider[,'Week']))
-		sts <- new("sts",epoch=1:end,freq=52,start=start,observed=numeric_data)
-		title_str<-paste(c(cause,"-coded"," mortality in ",jurisdiction),collapse="")
-		#Sparse data creates a couple problems:
-		##1) not all jurisdictions have the most recent weeks -- indeed, they may not have data going way back. I address for this by comparing the indices against the data frame size after the jurisdiction and cause filters have been applied. When mismatches like this occur, I add a note to the graph's title.
-		##2) the other problem is harder to catch -- insufficient data for the farrington algorithm to work. I use an error handler for that, and throw back an empty graph
-		if(end<end_idx){
-			gap<-end_idx - start_idx
-			end_idx<-end
-			if(start_idx>end_idx){
-				start_idx<-max(1,end_idx-gap)
-			}
-			title_str<-paste(c(title_str,"**data is sparse here**"),collapse=" ")
-		}
-		cntrlFar <- list(range=start_idx:end_idx,start=start,w=w,b=b,alpha=alpha)
-		fig <- plot_ly()
-		y_axis_title<-paste(c("Deaths: X's mark 'outbreaks' with ",as.character(ci_raw),"% certainty"),collapse="")
-
-
-		result = tryCatch({
-			surveil_sts_far <- farrington(sts,control=cntrlFar)
-			far_df<-tidy.sts(surveil_sts_far)
-
-			week_averages<-list()
-			for(week in unique(far_df$epochInYear)){
-				t<-filter(counts_wider,Week==week)
-				a<-t%>%slice((nrow(t)-b):(nrow(t)-1))
-				r<-mean(a%>%pull(cause))
-				week_averages[[length(week_averages)+1]]<-r
-			}
-			wkavg<-as.numeric(unlist(week_averages))
-
-			weds<-far_df$date
-
-			obs<-far_df$observed
-			upperb<-far_df$upperbound
-			excess<-obs-wkavg
-			excess[excess<0]<-0
-
-			obs<-obs-excess
-			alarms<-far_df$alarm
-			alarms_text<-list()
- 			for(a in alarms){
- 				if(a==1){alarm_text<-"X"}
-				else{alarm_text<-""}
-				alarms_text[[length(alarms_text)+1]]<-alarm_text
-			}
-			fig <- fig %>% layout(
- 				title=title_str,
-				xaxis=list('title'='Week Ending Date'),
-				yaxis=list('title'=y_axis_title),
-				paper_bgcolor = '#c3d1e8',
-				barmode='stack'
-			)
-			fig <- fig %>% add_trace(
-				x=weds,
-				y=wkavg,
-				text=alarms_text,
-				textposition="inside",
-				type='bar',
-				name=paste(c(as.character(b),"-year Average"),collapse="")
-			)
-			fig <- fig %>% add_trace(
-				x=weds,
-				y=excess,
- 				type='bar',
-				name=paste(c(weighted," mortality in excess of ",as.character(b),"-year Average"),collapse="")
-			)
-		}, error = function(e) {
-			print("ERROR ERROR ERROR")
- 			list(
-				layout=list(
-					title="DATA TOO SPARSE TO RENDER GRAPH WITH THESE SPECIFIC PARAMETERS",
-					xaxis=list('title'='Week Ending Date'),
-					yaxis=list('title'='Deaths'),
-					paper_bgcolor = '#c3d1e8'
-				),
-				data = list()
-			)
-		})
+	function(cause,jurisdiction,weighted,ci_raw,b,wb,excess_measure) {
+		cause<-cause
+		jurisdiction<-jurisdiction
+		weighted<-weighted
+		ci_raw<-ci_raw
+		b<-b
+		wb<-wb
+		w<-w
+		excess_measure<-excess_measure
+		source("excess_figures.R",local=TRUE)
+		result<-fig
+		results<-fig
 	}
 )
 
