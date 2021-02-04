@@ -63,7 +63,7 @@ for(i in weighted_opts){
 }
 
 ci_sliderlabels<-list()
-for(i in 80:100){ci_sliderlabels[[i]]<-as.character(i-1)}
+for(i in 50:100){ci_sliderlabels[[i]]<-as.character(i-1)}
 
 yearsback_sliderlabels<-list()
 for(i in 1:4){yearsback_sliderlabels[[i]]<-as.character(i-1)}
@@ -110,15 +110,6 @@ app$layout(
         ),
 	htmlDiv(
 		list(
-			htmlLabel('Confidence Interval on Trend'),
-			dccSlider(
-				id = 'ci_slider',
-				min = 80,
-				max = 99,
-				marks = ci_sliderlabels,
-				value = 95,
-				included = FALSE
-			),
                         htmlLabel('Base Trendline on # Years of Previous Data'),
                         dccSlider(
                                 id = 'yearsback_slider',
@@ -129,7 +120,19 @@ app$layout(
 				included= FALSE
                         )
 
-                ),style=list('columnCount'=2,'width'='90%','marginTop'=15,'marginBottom'=15)
+                ),style=list('width'='90%','marginTop'=15,'marginBottom'=15)
+        ),
+	htmlDiv(
+                list(
+                        htmlLabel('Confidence Interval on Trend'),
+                        dccSlider(
+                                id = 'ci_slider',
+                                min = 50,
+                                max = 99,
+				value=95,
+				marks=ci_sliderlabels
+                        )
+                ),style=list('width'='100%','marginTop'=15)
         ),
 	htmlDiv(
                 list(
