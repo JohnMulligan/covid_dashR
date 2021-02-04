@@ -80,6 +80,9 @@ print(y_axis_title)
 		print(obs)
 		print(excess)
 		
+		cum_excess=round(sum(excess))
+		title_str<-paste(c(title_str,":",cum_excess,"cumulative excess deaths."),collapse=" ")
+		
 		fig <- fig %>% layout(
 			title=title_str,
 			xaxis=list('title'='Week Ending Date'),
