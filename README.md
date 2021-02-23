@@ -17,8 +17,10 @@ Run it locally with:
 
 Rscript farrington_bystate_dash.R
 
-Feb 10
-* now displays cumulative excess deaths for the view
+Feb 22
+* A late January report showed a spike in projected deaths for its final week. 
+* The subsequent report downgraded that spike. 
+* There is no data from February in this latest dataset, from Feb. 17.
 
 Jan 10
 * now displays as stacked line graphs (instead of stacked bars)
