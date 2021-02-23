@@ -28,6 +28,6 @@ Jan 10
 
 This includes some Heroku files as well, for deployment.
 * Write-up at http://www.johncmulligan.net/blog/2020/11/26/excess-mortality-and-covid-19/
-* App currently live at http://covid-excess-r.herokuapp.com/
+* App currently live at http://covid-nchs-dash-r2.herokuapp.com/
 
 ![dash1](https://raw.githubusercontent.com/JohnMulligan/covid_dashR/master/Screen%20Shot%202021-01-10%20at%209.36.38%20PM.png)
