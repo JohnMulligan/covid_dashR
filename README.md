@@ -17,6 +17,8 @@ Run it locally with:
 
 Rscript farrington_bystate_dash.R
 
+### latest data, updated Feb 24, now reflects numbers through Feb 8.
+
 Feb 22
 * A late January report showed a spike in projected deaths for its final week. 
 * The subsequent report downgraded that spike. 
