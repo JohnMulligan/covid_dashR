@@ -12,8 +12,9 @@ library(dplyr)
 
 start_idx<-wb[[1]]
 end_idx<-wb[[2]]
+alpha<-.95
+ci_raw<-95
 cistring<-paste(c(as.character(ci_raw),"% CI Upper Bound of ",as.character(b),"-Year Trend"),collapse="")
-alpha<-1.00-ci_raw/100
 counts_filtered<-filter(counts,Type==weighted)
 counts_filtered<-filter(counts_filtered,`Jurisdiction` == jurisdiction)
 counts_filtered<-filter(counts_filtered,`Cause Subgroup` == cause)

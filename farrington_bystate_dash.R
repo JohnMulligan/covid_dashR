@@ -21,6 +21,8 @@ steps_back<-40
 counts <- read_csv("Weekly_counts_of_death_by_jurisdiction_and_cause_of_death.csv")
 week_ending_dates<-unique(counts$`Week Ending Date`[order(counts$Year,counts$Week)])
 
+print(counts)
+
 steps_back_slider_opts<-list()
 idx<-0
 wed<-week_ending_dates[(length(week_ending_dates)-max_steps_back):length(week_ending_dates)]
@@ -31,15 +33,9 @@ for(i in wed){
 }
 
 
-stepsback_sliderlabels<-list()
 min_start_idx<-length(week_ending_dates)-max_steps_back
 max_end_idx<-length(week_ending_dates)
-
-
-for(i in min_start_idx:max_end_idx){
-	stepsback_sliderlabels[[i]]<-week_ending_dates[i]
-}
-
+wb<-list(min_start_idx,max_end_idx)
 
 
 causes<-unique(counts$`Cause Subgroup`)
@@ -54,7 +50,7 @@ for(i in jurisdictions){
 	jurisdiction_dropdown_opts[[length(jurisdiction_dropdown_opts)+1]]<-list(label=i,value=i)
 }
 
-excess_radio_opts<-list(list(label='Farrington CI Upperbound',value='Farrington'),list(label='Average',value='Average'))
+excess_radio_opts<-list(list(label='Upper Bound of 95% CI',value='Farrington'),list(label='Average',value='Average'))
 
 weighted_opts<-unique(counts$`Type`)
 weighted_radio_opts<-list()
@@ -67,6 +63,8 @@ for(i in 50:100){ci_sliderlabels[[i]]<-as.character(i-1)}
 
 yearsback_sliderlabels<-list()
 for(i in 1:4){yearsback_sliderlabels[[i]]<-as.character(i-1)}
+
+
 
 
 
@@ -121,30 +119,8 @@ app$layout(
                         )
 
                 ),style=list('width'='90%','marginTop'=15,'marginBottom'=15)
-        ),
-	htmlDiv(
-                list(
-                        htmlLabel('Confidence Interval on Trend'),
-                        dccSlider(
-                                id = 'ci_slider',
-                                min = 50,
-                                max = 99,
-				value=95,
-				marks=ci_sliderlabels
-                        )
-                ),style=list('width'='100%','marginTop'=15)
-        ),
-	htmlDiv(
-                list(
-                        htmlLabel('Date Range'),
-			dccRangeSlider(
-                                id = 'weeks_slider',
-                                min = min_start_idx,
-                                max = max_end_idx,
-                                value = list(min_start_idx,max_end_idx)
-                        )
-		),style=list('width'='100%','marginTop'=15)
-	)
+        )
+	
 	))
 )
 
@@ -154,21 +130,17 @@ app$callback(
 		input(id='cause_dropdown',property='value'),
 		input(id='jurisdiction_dropdown',property='value'),
 		input(id='weighted_radio',property='value'),
-		input(id='ci_slider',property='value'),
 		input(id='yearsback_slider',property='value'),
-		input(id='weeks_slider',property='value'),
 		input(id='excess_radio',property='value')
 	),
-	function(cause,jurisdiction,weighted,ci_raw,b,wb,excess_measure) {
+	function(cause,jurisdiction,weighted,b,excess_measure) {
 		cause<-cause
 		jurisdiction<-jurisdiction
 		weighted<-weighted
-		ci_raw<-ci_raw
 		b<-b
-		wb<-wb
 		w<-w
 		excess_measure<-excess_measure
-		source("excess_figures.R",local=TRUE)
+		source("excess_figures.r",local=TRUE)
 		result<-fig
 		results<-fig
 	}

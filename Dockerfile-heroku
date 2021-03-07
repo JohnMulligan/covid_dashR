@@ -1,0 +1,12 @@
+FROM plotly/heroku-docker-r:3.6.2_heroku18 as base
+
+# install dependencies with init.R
+COPY init.r /app/
+RUN /usr/bin/R --no-init-file --no-save --quiet --slave -f /app/init.r
+
+from base as build
+
+COPY . /app/
+
+# here farrington_bystate_dash.R needs to match the name of the file which contains your app              
+CMD cd /app && /usr/bin/R --no-save -f /app/farrington_bystate_dash.r
