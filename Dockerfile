@@ -10,4 +10,4 @@ COPY . /app/
 
 EXPOSE 8050
 
-CMD cd /app && /usr/bin/R --no-save -f /app/farrington_bystate_dash.r
+CMD cd /app && /usr/bin/R --no-save -f /app/farrington_bystate_dash.R
