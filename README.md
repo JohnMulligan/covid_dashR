@@ -1,5 +1,7 @@
 # Dockerized Covid Dash in R
 
+Live app (takes time to spin up) is deployed here: https://covid-excess-nchs.herokuapp.com/
+
 This repo contains 3 builds of a Plotly app in R for quantifying covid-related mortality.
 
 It also contains a Dockerfile for building the environment for local and remote deployment.
