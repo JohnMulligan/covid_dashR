@@ -7,19 +7,11 @@ library(tidyr)
 library(dplyr)
 
 app<-Dash$new()
-fig<-plot_ly()
 
-#https://dashr.plotly.com/
 
-counts <- read_csv("Weekly_counts_of_death_by_jurisdiction_and_cause_of_death.csv")
 
-jurisdiction<-"Texas"
-cause<-"Diabetes"
-weighted<-"Unweighted"
-#year<-2016
 years<-unique(counts$Year)
 
-#https://plotly.com/python/line-charts/
 
 fig <- plot_ly()
 
@@ -29,6 +21,7 @@ print(year)
 counts_filtered<-filter(counts,`Type`==weighted,`Jurisdiction`==jurisdiction,`Cause Subgroup`==cause,`Year`==year)
 df<-counts_filtered %>% select(`Number of Deaths`,`Week`)
 
+print(df)
 
 fig <- fig %>% add_trace(
 	x=df$Week,
@@ -47,17 +40,4 @@ fig <- fig %>% layout(
 	paper_bgcolor = '#c3d1e8'
 
 )
-
-
-app$layout(
-	htmlDiv(list(
-			dccGraph(id='fizz',figure=fig)
-		))
-)
-
-app$run_server(host='0.0.0.0',port=Sys.getenv('PORT',8050))
-
-
-
-
 
