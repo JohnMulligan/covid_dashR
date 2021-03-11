@@ -11,83 +11,143 @@ library(dplyr)
 #weighted<-"Unweighted"
 fig <- plot_ly()
 
-observed <- filter(counts,`Type`==weighted,`Jurisdiction`==jurisdiction,`Cause Subgroup`==cause,`Year`>=2020)
+cause_and_jurisdiction <-filter(counts,`Type`==weighted,`Jurisdiction` %in% jurisdiction,`Cause Subgroup` %in% cause)
+
+observed <- filter(cause_and_jurisdiction,`Year`>=2020)
 observed <- observed %>% select(`Number of Deaths`,`Week`,`Week Ending Date`,`Year`)
+observed <- observed %>% group_by(`Week`,`Year`,`Week Ending Date`) %>% summarize('Number of Deaths'=sum(`Number of Deaths`))
 observed <- arrange(observed,`Year`,`Week`)
 
-comparison <- filter(counts,`Type`==weighted,`Jurisdiction`==jurisdiction,`Cause Subgroup`==cause,`Year`<2020)
+lastweek<-format(observed$`Week Ending Date`[nrow(observed)],format="%B %d %Y")
+
+comparison <- filter(cause_and_jurisdiction,`Year`<2020)
+comparison <- arrange(comparison,`Year`,`Week`)
+comparison <- select(comparison,-`Cause Subgroup`)
+comparison <- comparison %>% group_by(`Week`,`Week Ending Date`) %>% summarize('Number of Deaths'=sum(`Number of Deaths`))
+firstweek<-format(comparison$`Week Ending Date`[nrow(comparison)],format="%B %d %Y")
 comparison <- comparison  %>% select(`Number of Deaths`,`Week`)
 comparison <- comparison %>% group_by(Week) %>% summarize('Number of Deaths'=mean(`Number of Deaths`))
 comparison <- arrange(comparison,`Week`)
 
 rowdiff=nrow(observed)-nrow(comparison)
 padded<-rbind(comparison,head(comparison,rowdiff))
-normal<-data.matrix(observed$`Number of Deaths`)
+padded_count<-data.matrix(padded$`Number of Deaths`)
+death_count<-data.matrix(observed$`Number of Deaths`)
 
-print(nrow(observed))
-print(nrow(normal))
-print(nrow(comparison))
+cum_observed<-round(sum(death_count))
+cum_padded<-round(sum(padded))
 
-excess<-normal-data.matrix(padded$`Number of Deaths`)
-excess[excess<0]<-0
-
+jurisdiction_str<-paste(c(jurisdiction),collapse=", ")
+cause_str<-paste(c(cause),collapse=", ")
 
 fig <- plot_ly()
-cum_excess=round(sum(excess))
-
 weds<-observed$`Week Ending Date`
 y_axis_title<-paste(c(weighted, " Deaths"),collapse="")
 
-cum_excess=round(sum(excess))
+failure<-1
+result = tryCatch({
+		excess<-death_count-padded_count
+		excess[excess<0]<-0
+		failure<-0
+	}, error = function(e) {
+		print("ERROR ERROR ERROR")
+		
+})
 
-title_str<-paste(c(cause,"-coded"," mortality in ",jurisdiction,": ",cum_excess," cumulative excess deaths."),collapse="")
 
-if (graph_type=="stackedlines"){
+if (failure==1){
 
-	fig <- fig %>% layout(
-		title=title_str,
+fig<-list(
+	layout=list(
+		title="DATA TOO SPARSE TO RENDER GRAPH WITH THESE SPECIFIC PARAMETERS",
 		xaxis=list('title'='Week Ending Date'),
-		yaxis=list('title'=y_axis_title),
-		paper_bgcolor = '#c3d1e8',
-		type='scatter',
-		stackgroup='one'
-	)
-	fig <- fig %>% add_trace(
-		stackgroup='one',
-		x=weds,
-		y=normal,
-		mode='none',
-		name=paste(c("Average mortality, 2015-2019"),collapse="")
-	)
-	fig <- fig %>% add_trace(
-		stackgroup='one',
-		x=weds,
-		y=excess,
-		mode='none',
-		name=paste(c(weighted," \"Excess\" mortality"),collapse="")
+		yaxis=list('title'='Deaths'),
+		paper_bgcolor = '#c3d1e8'
+	),
+	data = list()
 	)
 	
-} else if (graph_type=="stackedbars") {
+para<-paste(c("The CDC's published mortality data is too sparse to estimate 2020-21 excess deaths attributed to ", tolower(cause_str), " in ", jurisdiction_str,". There are only ", nrow(observed), " weeks with data since January 2020 (showing a total of ", cum_observed, " deaths) and ", nrow(comparison)," weeks with data since 2015."),collapse="")
 
-	fig <- fig %>% layout(
-				title=title_str,
-				xaxis=list('title'='Week Ending Date'),
-				yaxis=list('title'=y_axis_title),
-				paper_bgcolor = '#c3d1e8',
-				type='bar',
-				barmode='stack'
-			)
-	fig <- fig %>% add_trace(
-		x=weds,
-		y=normal,
-		type='bar',
-		name=paste(c("Average mortality, 2015-2019"),collapse="")
-	)
-	fig <- fig %>% add_trace(
-		x=weds,
-		y=excess,
-		type='bar',
-		name=paste(c(weighted," \"Excess\" mortality"),collapse="")
-	)
+} else {
+
+	cum_excess=round(sum(excess))
+
+	cum_excess=round(sum(excess))
+
+	title_str<-paste(c(cause_str,"-coded"," mortality in ",jurisdiction_str,": ",cum_excess," cumulative excess deaths."),collapse="")
+
+	if (graph_type=="stackedlines"){
+
+		fig <- fig %>% layout(
+			title=title_str,
+			xaxis=list('title'='Week Ending Date'),
+			yaxis=list('title'=y_axis_title),
+			paper_bgcolor = '#c3d1e8',
+			type='scatter',
+			stackgroup='one'
+		)
+		fig <- fig %>% add_trace(
+			stackgroup='one',
+			x=weds,
+			y=padded_count,
+			mode='none',
+			name=paste(c("Average mortality, 2015-2019"),collapse="")
+		)
+		fig <- fig %>% add_trace(
+			stackgroup='one',
+			x=weds,
+			y=excess,
+			mode='none',
+			name=paste(c(weighted," \"Excess\" mortality"),collapse="")
+		)
+	
+	} else if (graph_type=="stackedbars") {
+
+		fig <- fig %>% layout(
+					title=title_str,
+					xaxis=list('title'='Week Ending Date'),
+					yaxis=list('title'=y_axis_title),
+					paper_bgcolor = '#c3d1e8',
+					type='bar',
+					barmode='stack'
+				)
+		fig <- fig %>% add_trace(
+			x=weds,
+			y=padded_count,
+			type='bar',
+			name=paste(c("Average mortality, 2015-2019"),collapse="")
+		)
+		fig <- fig %>% add_trace(
+			x=weds,
+			y=excess,
+			type='bar',
+			name=paste(c(weighted," \"Excess\" mortality"),collapse="")
+		)
+
+	}
+
+
+
+para<-paste(c(
+	"This graph shows two measures of death attributed to ",
+	tolower(cause_str),
+	" in ",
+	jurisdiction_str,
+	" between ",
+	firstweek,
+	" and ",
+	lastweek,
+	". In orange, it shows the week-by-week number of deaths in excess of that week's average for 2015-2019. In blue, it shows that average. This suggests that ",
+	cum_excess,
+	" people who died in ",
+	jurisdiction_str,
+	" since the outbreak of COVID, whose deaths were attributed to ",
+	tolower(cause_str),
+	", died as a result the pandemic."
+),collapse="")
+
+
+
 
 }

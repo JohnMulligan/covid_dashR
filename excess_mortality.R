@@ -48,8 +48,6 @@ for(i in jurisdictions){
 	jurisdiction_dropdown_opts[[length(jurisdiction_dropdown_opts)+1]]<-list(label=i,value=i)
 }
 
-excess_radio_opts<-list(list(label='Upper Bound of 95% CI',value='Farrington'),list(label='Average',value='Average'))
-
 weighted_opts<-unique(counts$`Type`)
 weighted_radio_opts<-list()
 for(i in weighted_opts){
@@ -68,49 +66,57 @@ for(i in 1:4){yearsback_sliderlabels[[i]]<-as.character(i-1)}
 app$layout(
 	htmlDiv(list(
 
-	htmlDiv(list(
+		htmlDiv(list(
 			dccGraph(id='fizz',figure=fig)
 		)),
-	htmlDiv(
-		list(
-			htmlLabel('Listed Cause of Death'),
-			dccDropdown(
-				id = 'cause_dropdown',
-				options = cause_dropdown_opts,
-				value = 'Diabetes'
+		htmlDiv(list(
+			htmlDiv(
+				list(
+					htmlLabel('Listed Cause of Death'),
+					dccDropdown(
+						multi=TRUE,
+						id = 'cause_dropdown',
+						options = cause_dropdown_opts,
+						value = 'Diabetes'
+					),
+					htmlP(''),
+					htmlLabel('State'),
+					dccDropdown(
+						multi=TRUE,
+						id = 'jurisdiction_dropdown',
+						options = jurisdiction_dropdown_opts,
+						value = "Texas"
+					),
+					htmlP(''),
+					htmlLabel('Weighted or Raw Counts'),
+					dccRadioItems(
+							id = 'weighted_radio',
+							options = weighted_radio_opts,
+							value = weighted_radio_opts[[1]]$value
+							),
+					htmlP(''),
+					htmlLabel('Graph Type'),
+					dccDropdown(
+						id = 'graph_type',
+						options = list(
+								list('label'='Stacked Lines','value'='stackedlines'),
+								list('label'='Stacked Bars','value'='stackedbars')									),
+						value = 'stackedlines'
+						)
+				),style=list('width'='48%','display'='inline-block','margin'=1)
 			),
-			htmlLabel('State'),
-			dccDropdown(
-				id = 'jurisdiction_dropdown',
-				options = jurisdiction_dropdown_opts,
-				value = "Texas"
+			htmlDiv(id="para",style=list('width'='48%','display'='inline-block','float'='right','margin'=1)
 			)
-		),style=list('columnCount'=2,'width'='100%','marginTop'=15,'marginBottom'=15)
-	),
-	htmlDiv(
-                list(
-                        htmlLabel('Weighted or Raw Counts'),
-                        dccRadioItems(
-                                id = 'weighted_radio',
-                                options = weighted_radio_opts,
-                                value = "Unweighted"
-                        		),
-                        htmlLabel('Graph Type'),
-						dccDropdown(
-							id = 'graph_type',
-							options = list(
-									list('label'='Stacked Lines','value'='stackedlines'),
-									list('label'='Stacked Bars','value'='stackedbars')									),
-							value = 'stackedlines'
-							)  
-                ),style=list('columnCount'=2,'width'='100%','marginTop'=15,'marginBottom'=15)
-        )
+		))
 	))
 )
 
         
 app$callback(
-	output = list(id='fizz',property='figure'),
+	output = list(
+		output('fizz','figure'),
+		output('para','children')
+	),
 	params = list(
 		input(id='cause_dropdown',property='value'),
 		input(id='jurisdiction_dropdown',property='value'),
@@ -118,30 +124,14 @@ app$callback(
 		input(id='graph_type',property='value')
 	),
 	function(cause,jurisdiction,weighted,graph_type) {
-
-		result = tryCatch({
-
-			cause<-cause
-			jurisdiction<-jurisdiction
-			weighted<-weighted
-		
-			
-				source("excess_stacked.R",local=TRUE)
-				result<-fig
-			
-
-		}, error = function(e) {
-				print("ERROR ERROR ERROR")
-				list(
-					layout=list(
-						title="DATA TOO SPARSE TO RENDER GRAPH WITH THESE SPECIFIC PARAMETERS",
-						xaxis=list('title'='Week Ending Date'),
-						yaxis=list('title'='Deaths'),
-						paper_bgcolor = '#c3d1e8'
-					),
-					data = list()
-				)
-		})
+		cause<-cause
+		jurisdiction<-jurisdiction
+		weighted<-weighted
+		print(cause)
+		print(jurisdiction)
+		print(weighted)
+		source("excess_stacked.R",local=TRUE)
+		return(list(fig,para))
 
 	}
 )
