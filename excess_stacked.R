@@ -129,23 +129,31 @@ para<-paste(c("The CDC's published mortality data is too sparse to estimate 2020
 
 
 
-para<-paste(c(
-	"This graph shows two measures of death attributed to ",
-	tolower(cause_str),
-	" in ",
-	jurisdiction_str,
-	" between ",
-	firstweek,
-	" and ",
-	lastweek,
-	". In orange, it shows the week-by-week number of deaths in excess of that week's average for 2015-2019. In blue, it shows that average. This suggests that ",
-	cum_excess,
-	" people who died in ",
-	jurisdiction_str,
-	" since the outbreak of COVID, whose deaths were attributed to ",
-	tolower(cause_str),
-	", died as a result the pandemic."
-),collapse="")
+para<- list(htmlP(
+		paste(c("This graph shows two measures of death attributed to ",
+		tolower(cause_str),
+		" in ",
+		jurisdiction_str,
+		" between ",
+		firstweek,
+		" and ",
+		lastweek,
+		"."),collapse="")),
+		
+		htmlP(
+		paste(c("In orange, it shows the week-by-week number of deaths in excess of that week's average for 2015-2019. In blue, it shows that average."),collapse="")),
+				
+		htmlP(paste(c("This suggests that ",
+		cum_excess,
+		" people who died in ",
+		jurisdiction_str,
+		" since the outbreak of COVID, whose deaths were attributed to ",
+		tolower(cause_str),
+		", died as a result of the pandemic."),collapse="")
+		))
+		
+		
+		
 
 
 
