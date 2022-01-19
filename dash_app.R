@@ -62,7 +62,7 @@ app$layout(
 			htmlH1('Excess Mortality and COVID-19'),
 			htmlP('Developed in partnership between the CRC and Medical Futures Lab at Rice.'),
 			htmlBr(),
-			htmlA('Data updated January 12, 2022.', href="https://data.cdc.gov/NCHS/Weekly-Counts-of-Death-by-Jurisdiction-and-Select-/u6jv-9ijr"),
+			htmlA('Data updated January 19, 2022 -- but no deaths have been reported for 2022.', href="https://data.cdc.gov/NCHS/Weekly-Counts-of-Death-by-Jurisdiction-and-Select-/u6jv-9ijr"),
 			htmlBr(),
 			htmlA('This app was featured on KHOU\'s pandemic coverage.',href="https://twitter.com/KHOU/status/1446477984169439235"),
 			htmlBr(),

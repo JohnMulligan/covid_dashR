@@ -6,7 +6,7 @@ This repo contains 3 builds of a Plotly app in R for quantifying covid-related e
 
 It also contains a Dockerfile for building the environment for local and remote deployment.
 
-Data is current for Jan 12, 2022.
+Data is current for Jan 19, 2022 but no 2022 deaths have been reported.
 
 This app has been featured on:
 
