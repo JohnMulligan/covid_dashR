@@ -63,8 +63,8 @@ result = tryCatch({
 		excess<-observed_matrix-comparison_matrix
 		excess[excess<0]<-0
 		failure<-0
-		print(observed_matrix)
-		print(comparison_matrix)
+		#print(observed_matrix)
+		#print(comparison_matrix)
 	}, error = function(e) {
 		print("ERROR ERROR ERROR")
 		
