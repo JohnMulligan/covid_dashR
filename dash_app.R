@@ -61,10 +61,8 @@ app$layout(
 		htmlDiv(list(
 			htmlH1('Excess Mortality and COVID-19'),
 			htmlP('Developed in partnership between the CRC and Medical Futures Lab at Rice.'),
-			htmlBr(),
-			htmlA('Data updated January 26, 2022.', href="https://data.cdc.gov/NCHS/Weekly-Counts-of-Death-by-Jurisdiction-and-Select-/u6jv-9ijr"),
-			htmlBr(),
-			htmlA('This app was featured on KHOU\'s pandemic coverage.',href="https://twitter.com/KHOU/status/1446477984169439235"),
+			htmlP('Please contact jcm10@rice.edu with any questions')
+			htmlA('Data updated February 2, 2022.', href="https://data.cdc.gov/NCHS/Weekly-Counts-of-Death-by-Jurisdiction-and-Select-/u6jv-9ijr"),
 			htmlBr(),
 			htmlA("Read more about this app on the Medical Futures blog.", href="https://mfl.rice.edu/covid-19-excess-mortality-data-visualization")
 		)),

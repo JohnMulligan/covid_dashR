@@ -6,7 +6,7 @@ This repo contains 3 builds of a Plotly app in R for quantifying covid-related e
 
 It also contains a Dockerfile for building the environment for local and remote deployment.
 
-Data is current for Jan 26, 2022.
+Data is current for Feb 2, 2022.
 
 This app has been featured on:
 
@@ -18,6 +18,7 @@ Note for Aug 25: I have updated the explanatory text to make it a little more ap
 ## Data and Apps
 
 The app parses a large csv (~50MB) from the CDC: https://data.cdc.gov/NCHS/Weekly-counts-of-death-by-jurisdiction-and-cause-o/u6jv-9ijr/
+or https://data.cdc.gov/api/views/u6jv-9ijr/rows.csv?accessType=DOWNLOAD
 
 Based on user selections of: official cause(s) of death and state(s) those deaths were reported in, it finds the average number of deaths for each week in 2015-2019, and then compares this to the number of deaths recorded in 2020-2022.
 

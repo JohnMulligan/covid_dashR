@@ -28,28 +28,37 @@ comparison <- comparison %>% group_by(`Week Ending Date`,`Week`) %>% summarize('
 comparison <- comparison %>% group_by(`Week`) %>% summarize('Number of Deaths'=mean(`Number of Deaths`))
 
 #add the 53rd week by averaging the first and last weeks of years 2015-2019
-#this is for 2020, following the CDC's stated method (but i'm getting higher excess counts)
-if (53 %in% counts$Week) { 
+if (53 %in% observed$Week) { 
   fiftythirdstate<-round(mean(filter(comparison,`Week` %in% c(1,52))$`Number of Deaths`))
+  comparison<-rbind(comparison,c(`Week`=53,`Number of Deaths`=fiftythirdstate))
 }
+
 
 comparison <- comparison  %>% select(`Number of Deaths`,`Week`)
 comparison <- comparison %>% group_by(Week) %>% summarize('Number of Deaths'=round(mean(`Number of Deaths`)))
 comparison <- arrange(comparison,`Week`)
 
+avg<-vector()
+obs<-vector()
 
-#matching up the data frame sizes for easy subtraction later
-if (53 %in% counts$Week) { 
-	comparison<-rbind(comparison,c(`Week`=53,`Number of Deaths`=fiftythirdstate))
+for(o in observed$`Week Ending Date`){
+
+week<-filter(observed,`Week Ending Date`==o)$`Week`
+w_obs<-filter(observed,`Week Ending Date`==o)$`Number of Deaths`
+w_avg<-filter(comparison,Week==week)$`Number of Deaths`
+
+avg<-rbind(avg,w_avg)
+obs<-rbind(obs,w_obs)
+	
 }
 
-rowdiff=nrow(observed)-nrow(comparison)
-padded_comparison<-rbind(comparison,head(comparison,rowdiff))
-comparison_matrix<-data.matrix(padded_comparison$`Number of Deaths`)
-observed_matrix<-data.matrix(observed$`Number of Deaths`)
+obs<-data.matrix(obs)
+avg<-data.matrix(avg)
+obs[is.na(obs)] = 0
+avg[is.na(avg)] = 0
 
-cum_observed<-round(sum(observed_matrix))
-cum_comparison<-round(sum(comparison_matrix))
+cum_observed<-round(sum(observed$`Number of Deaths`))
+cum_comparison<-round(sum(avg))
 
 jurisdiction_str<-paste(c(jurisdiction),collapse=", ")
 cause_str<-paste(c(cause),collapse=", ")
@@ -58,19 +67,15 @@ fig <- plot_ly()
 weds<-observed$`Week Ending Date`
 y_axis_title<-paste(c(weighted, " Deaths"),collapse="")
 
+
 failure<-1
 result = tryCatch({
-		excess<-observed_matrix-comparison_matrix
+		excess<-obs-avg
 		excess[excess<0]<-0
 		failure<-0
-		#print(observed_matrix)
-		#print(comparison_matrix)
 	}, error = function(e) {
-		print("ERROR ERROR ERROR")
-		
+		print("ERROR ERROR ERROR")		
 })
-
-
 
 if (failure==1){
 
@@ -84,13 +89,13 @@ fig<-list(
 	data = list()
 	)
 	
-para<-paste(c("The CDC's published mortality data is too sparse to estimate 2020-21 excess deaths attributed to ", tolower(cause_str), " in ", jurisdiction_str,". There are only ", nrow(observed), " weeks with data since January 2020 (showing a total of ", cum_observed, " deaths) and ", nrow(comparison)," weeks with data since 2015."),collapse="")
+para<-paste(c("The CDC's published mortality data is too sparse to estimate 2020-21 excess deaths attributed to ", tolower(cause_str), " in ", jurisdiction_str,". There are only ", nrow(observed), " weeks with data since January 2020 (showing a total of ", cum_observed, " deaths) and ", nrow(avg)," weeks with data since 2015."),collapse="")
 
 } else {
-
-	cum_excess=round(sum(excess))
-	
-	cum_total=cum_comparison+cum_excess
+	cum_excess<-round(sum(excess))
+	cum_total<-round(sum(obs))
+	print(cum_excess)
+	print(cum_total)
 
 	title_str<-paste(c(cause_str,"-coded"," mortality in ",jurisdiction_str,": ",cum_excess," cumulative excess deaths."),collapse="")
 
@@ -107,7 +112,7 @@ para<-paste(c("The CDC's published mortality data is too sparse to estimate 2020
 		fig <- fig %>% add_trace(
 			stackgroup='one',
 			x=weds,
-			y=comparison_matrix,
+			y=avg,
 			mode='none',
 			name=paste(c("Average mortality, 2015-2019"),collapse="")
 		)
@@ -118,7 +123,7 @@ para<-paste(c("The CDC's published mortality data is too sparse to estimate 2020
 			mode='none',
 			name=paste(c(weighted," \"Excess\" mortality"),collapse="")
 		)
-	
+
 	} else if (graph_type=="stackedbars") {
 
 		fig <- fig %>% layout(
@@ -131,7 +136,7 @@ para<-paste(c("The CDC's published mortality data is too sparse to estimate 2020
 				)
 		fig <- fig %>% add_trace(
 			x=weds,
-			y=comparison_matrix,
+			y=avg,
 			type='bar',
 			name=paste(c("Average mortality, 2015-2019"),collapse="")
 		)
@@ -143,14 +148,17 @@ para<-paste(c("The CDC's published mortality data is too sparse to estimate 2020
 		)
 
 	}
+	
+	para1<-paste(c("When you count up the number of people who died between ", firstweek, " and ", lastweek, " whose deaths were attributed to ", tolower(cause_str), " in ", jurisdiction_str, " you would expect to see ", cum_comparison , " total deaths in the months since the pandemic began. This average number of deaths is shown in blue."),collapse="")
+	para2<-paste(c("Instead, we see ", cum_total, " total deaths. This means we have not explained why ", cum_excess, " more people died than than would have been expected in 'normal' times, whose deaths were attributed to these causes, in these places. This 'excess' number of deaths is shown in orange."),collapse="")
+	
+	print(para1)
+	print(para2)
 
-
-
-
-para<- list(htmlP(
-		paste(c("When you count up the number of people who died between ", firstweek, " and ", lastweek, " whose deaths were attributed to ", tolower(cause_str), " in ", jurisdiction_str, " you would expect to see ", cum_comparison , " total deaths in the months since the pandemic began. This average number of deaths is shown in blue."),collapse="")),
+	para<- list(htmlP(para1
+			),
 		
-		htmlP(
-		paste(c("Instead, we see ", cum_total, " total deaths. This means we have not explained why ", cum_excess, " more people died than than would have been expected in 'normal' times, whose deaths were attributed to these causes, in these places. This 'excess' number of deaths is shown in orange."),collapse=""))
-		)
+			htmlP(
+			para2)
+			)
 }
