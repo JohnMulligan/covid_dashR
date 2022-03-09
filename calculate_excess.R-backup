@@ -101,31 +101,59 @@ para<-paste(c("The CDC's published mortality data is too sparse to estimate 2020
 	title_str<-paste(c(cause_str,"-coded"," mortality in ",jurisdiction_str,": ",cum_excess," cumulative excess deaths."),collapse="")
 
 
-	fig <- fig %>% layout(
-		title=title_str,
-		xaxis=list('title'='Week Ending Date'),
-		yaxis=list('title'=y_axis_title),
-		paper_bgcolor = '#c3d1e8',
-		type='scatter',
-		stackgroup='one'
-	)
-	fig <- fig %>% add_trace(
-		stackgroup='one',
-		x=weds,
-		y=avg,
-		mode='none',
-		line = list(shape = "spline"),
-		name=paste(c("Average mortality, 2015-2019"),collapse="")
-	)
-	fig <- fig %>% add_trace(
-		stackgroup='one',
-		x=weds,
-		y=excess,
-		mode='none',
-		line = list(shape = "spline"),
-		name=paste(c(weighted," \"Excess\" mortality"),collapse="")
-	)
+	if (cum_excess<0) {
+		graph_type=="stackedlines"
+	}
+	
+	if (graph_type=="stackedlines"){
 
+		fig <- fig %>% layout(
+			title=title_str,
+			xaxis=list('title'='Week Ending Date'),
+			yaxis=list('title'=y_axis_title),
+			paper_bgcolor = '#c3d1e8',
+			type='scatter',
+			stackgroup='one'
+		)
+		fig <- fig %>% add_trace(
+			stackgroup='one',
+			x=weds,
+			y=avg,
+			mode='none',
+			name=paste(c("Average mortality, 2015-2019"),collapse="")
+		)
+		fig <- fig %>% add_trace(
+			stackgroup='one',
+			x=weds,
+			y=excess,
+			mode='none',
+			name=paste(c(weighted," \"Excess\" mortality"),collapse="")
+		)
+
+	} else if (graph_type=="stackedbars") {
+
+		fig <- fig %>% layout(
+					title=title_str,
+					xaxis=list('title'='Week Ending Date'),
+					yaxis=list('title'=y_axis_title),
+					paper_bgcolor = '#c3d1e8',
+					type='bar',
+					barmode='stack'
+				)
+		fig <- fig %>% add_trace(
+			x=weds,
+			y=avg,
+			type='bar',
+			name=paste(c("Average mortality, 2015-2019"),collapse="")
+		)
+		fig <- fig %>% add_trace(
+			x=weds,
+			y=excess,
+			type='bar',
+			name=paste(c(weighted," \"Excess\" mortality"),collapse="")
+		)
+
+	}
 	
 	para1<-paste(c("When you count up the number of people who died between ", firstweek, " and ", lastweek, " whose deaths were attributed to ", tolower(cause_str), " in ", jurisdiction_str, " you would expect to see ", cum_comparison , " total deaths in the months since the pandemic began. This average number of deaths is shown in blue."),collapse="")
 	

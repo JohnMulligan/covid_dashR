@@ -95,16 +95,7 @@ app$layout(
 							id = 'weighted_radio',
 							options = weighted_radio_opts,
 							value = weighted_radio_opts[[1]]$value
-							),
-					htmlP(''),
-					htmlLabel('Graph Type'),
-					dccDropdown(
-						id = 'graph_type',
-						options = list(
-								list('label'='Stacked Lines','value'='stackedlines'),
-								list('label'='Stacked Bars','value'='stackedbars')									),
-						value = 'stackedbars'
-						)
+							)
 				),style=list('width'='48%','display'='inline-block','margin'=1)
 			),
 			htmlDiv(id="para",style=list('width'='48%','display'='inline-block','float'='right','margin'=1)
@@ -122,11 +113,10 @@ app$callback(
 	params = list(
 		input(id='cause_dropdown',property='value'),
 		input(id='jurisdiction_dropdown',property='value'),
-		input(id='weighted_radio',property='value'),
-		input(id='graph_type',property='value')
+		input(id='weighted_radio',property='value')
 	),
 	
-	update_output <- function(cause,jurisdiction,weighted,graph_type) {
+	update_output <- function(cause,jurisdiction,weighted) {
 
 		if (length(cause)>0 && length(jurisdiction)>0){
 		
