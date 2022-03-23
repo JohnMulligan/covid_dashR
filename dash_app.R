@@ -62,7 +62,7 @@ app$layout(
 			htmlH1('Excess Mortality and COVID-19'),
 			htmlP('Developed in partnership between the CRC and Medical Futures Lab at Rice.'),
 			htmlP('Please contact jcm10@rice.edu with any questions'),
-			htmlA('Data updated March 16, 2022.', href="https://data.cdc.gov/NCHS/Weekly-Counts-of-Death-by-Jurisdiction-and-Select-/u6jv-9ijr"),
+			htmlA('Data updated March 23, 2022.', href="https://data.cdc.gov/NCHS/Weekly-Counts-of-Death-by-Jurisdiction-and-Select-/u6jv-9ijr"),
 			htmlBr(),
 			htmlA("Read more about this app on the Medical Futures blog.", href="https://mfl.rice.edu/covid-19-excess-mortality-data-visualization")
 		)),
@@ -79,7 +79,7 @@ app$layout(
 						multi=TRUE,
 						id = 'cause_dropdown',
 						options = cause_dropdown_opts,
-						value = 'Diabetes'
+						value = "Alzheimer disease and dementia"
 					),
 					htmlP(''),
 					htmlLabel('State'),
