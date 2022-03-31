@@ -39,11 +39,12 @@ for(i in causes){
 }
 
 jurisdictions<-unique(counts$`Jurisdiction`)
+jurisdictions<-jurisdictions[jurisdictions!="United States"]
+
 jurisdiction_dropdown_opts<-list()
 for(i in jurisdictions){
 	jurisdiction_dropdown_opts[[length(jurisdiction_dropdown_opts)+1]]<-list(label=i,value=i)
 }
-jurisdictions<-jurisdictions[jurisdictions!="United States"]
 
 weighted_opts<-unique(counts$`Type`)
 weighted_radio_opts<-list()
