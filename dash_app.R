@@ -13,6 +13,7 @@ w<-1
 nfreq<-52
 max_steps_back<-51
 steps_back<-40
+default_jurisdiction<-"Texas"
 
 counts <- read_delim(delim=",",file="Weekly_counts_of_death_by_jurisdiction_and_cause_of_death.csv")
 week_ending_dates<-unique(counts$`Week Ending Date`[order(counts$Year,counts$Week)])
@@ -39,12 +40,18 @@ for(i in causes){
 }
 
 jurisdictions<-unique(counts$`Jurisdiction`)
-jurisdictions<-jurisdictions[jurisdictions!="United States"]
 
 jurisdiction_dropdown_opts<-list()
 for(i in jurisdictions){
 	jurisdiction_dropdown_opts[[length(jurisdiction_dropdown_opts)+1]]<-list(label=i,value=i)
 }
+
+allstates_opts<-list("Select US","Select Individual States")
+allstates_radio_opts<-list()
+for(i in allstates_opts){
+	allstates_radio_opts[[length(allstates_radio_opts)+1]]<-list(label=i,value=i)
+}
+
 
 weighted_opts<-unique(counts$`Type`)
 weighted_radio_opts<-list()
@@ -64,7 +71,7 @@ app$layout(
 			htmlH1('Excess Mortality and COVID-19'),
 			htmlP('Developed in partnership between the CRC and Medical Futures Lab at Rice.'),
 			htmlP('Please contact jcm10@rice.edu with any questions'),
-			htmlA('Data updated March 30, 2022.', href="https://data.cdc.gov/NCHS/Weekly-Counts-of-Death-by-Jurisdiction-and-Select-/u6jv-9ijr"),
+			htmlA('Data updated April 6, 2022.', href="https://data.cdc.gov/NCHS/Weekly-Counts-of-Death-by-Jurisdiction-and-Select-/u6jv-9ijr"),
 			htmlBr(),
 			htmlA("Read more about this app on the Medical Futures blog.", href="https://mfl.rice.edu/covid-19-excess-mortality-data-visualization")
 		)),
@@ -76,6 +83,7 @@ app$layout(
 		htmlDiv(list(
 			htmlDiv(
 				list(
+					dccStore(id='store'),
 					htmlLabel('Listed Cause of Death'),
 					dccDropdown(
 						multi=TRUE,
@@ -84,13 +92,21 @@ app$layout(
 						value = "Alzheimer disease and dementia"
 					),
 					htmlP(''),
-					htmlLabel('State'),
+					htmlLabel('United States'),
+					dccRadioItems(
+							id = 'all_states_radio',
+							options = allstates_radio_opts,
+							value = allstates_radio_opts[[1]]$value
+							),
+					htmlP(''),
 					dccDropdown(
 						multi=TRUE,
 						id = 'jurisdiction_dropdown',
 						options = jurisdiction_dropdown_opts,
-						value = "Texas"
+						value = default_jurisdiction,
+						style=list("display"="block")
 					),
+					
 					htmlP(''),
 					htmlLabel('Weighted or Raw Counts'),
 					dccRadioItems(
@@ -106,11 +122,40 @@ app$layout(
 	))
 )
 
+
+app$callback(
+	output = list(
+		output('jurisdiction_dropdown','style'),
+		output('jurisdiction_dropdown','value')
+	),
+	params = list(
+		input(id='all_states_radio',property='value'),
+		input(id='store',property='data')
+	),
+	
+	update_output <- function(selectall,store) {
+						
+			if (selectall=="Select Individual States") {
+				style<-list('display'='block','height'=60,'margin'=5)
+				value<-store
+			} else {
+				style<-list('display'='none','height'=60,'margin'=5)
+				value<-"United States"
+				
+			}
+			
+			return(list(style,value))
+
+	}
+)
         
 app$callback(
 	output = list(
 		output('fizz','figure'),
-		output('para','children')
+		output('para','children'),
+		output('all_states_radio','value'),
+		output('store','data')
+
 	),
 	params = list(
 		input(id='cause_dropdown',property='value'),
@@ -121,14 +166,24 @@ app$callback(
 	update_output <- function(cause,jurisdiction,weighted) {
 
 		if (length(cause)>0 && length(jurisdiction)>0){
-		
+			
+			if ("United States" %in% jurisdiction) {
+				jurisdiction <- list("United States")
+				allstates_opts <- allstates_radio_opts[[1]]$value
+				store<-default_jurisdiction
+				
+			} else {
+				allstates_opts <- allstates_radio_opts[[2]]$value
+				store<-jurisdiction
+			}
+			
 			print(cause)
 			print(jurisdiction)	
 			cause<-cause
 			jurisdiction<-jurisdiction
 			weighted<-weighted
 			source("calculate_excess.R",local=TRUE)
-			return(list(fig,para))
+			return(list(fig,para,allstates_opts,store))
 		} else {
 		
 			return(dashNoUpdate())
@@ -138,7 +193,7 @@ app$callback(
 	}
 )
 
-app$run_server(host='0.0.0.0',port=Sys.getenv('PORT',8050))
+app$run_server(host='0.0.0.0',port=Sys.getenv('PORT',8050),debug=TRUE)
 
 
 
