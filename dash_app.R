@@ -104,7 +104,7 @@ app$layout(
 						id = 'jurisdiction_dropdown',
 						options = jurisdiction_dropdown_opts,
 						value = default_jurisdiction,
-						style=list("display"="block")
+						style=list()
 					),
 					
 					htmlP(''),
@@ -114,7 +114,7 @@ app$layout(
 							options = weighted_radio_opts,
 							value = weighted_radio_opts[[1]]$value
 							)
-				),style=list('width'='48%','display'='inline-block','margin'=1)
+				),style=list('width'='48%','display'='inline-block')
 			),
 			htmlDiv(id="para",style=list('width'='48%','display'='inline-block','float'='right','margin'=1)
 			)
@@ -136,10 +136,10 @@ app$callback(
 	update_output <- function(selectall,store) {
 						
 			if (selectall=="Select Individual States") {
-				style<-list('display'='block','height'=60,'margin'=5)
+				style<-list()
 				value<-store
 			} else {
-				style<-list('display'='none','height'=60,'margin'=5)
+				style<-list('display'='none')
 				value<-"United States"
 				
 			}
