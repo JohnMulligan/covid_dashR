@@ -71,6 +71,7 @@ app$layout(
 			htmlH1('Excess Mortality and COVID-19'),
 			htmlP('Developed in partnership between the CRC and Medical Futures Lab at Rice.'),
 			htmlP('Please contact jcm10@rice.edu with any questions'),
+			htmlP('No new data for the week of June 5, 2022. According to the NCHS: \'The National Vital Statistics System (NVSS) will be undergoing a system-wide upgrade starting June 6, 2022. NVSS COVID-19 surveillance webpages and data files will be paused between June 6, 2022 through June 17, 2022. Data updates are expected to resume on June 21, 2022.\''),
 			htmlA('Data updated June 1, 2022.', href="https://data.cdc.gov/NCHS/Weekly-Counts-of-Death-by-Jurisdiction-and-Select-/u6jv-9ijr"),
 			htmlBr(),
 			htmlA("Read more about this app on the Medical Futures blog.", href="https://mfl.rice.edu/covid-19-excess-mortality-data-visualization")
