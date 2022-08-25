@@ -13,7 +13,7 @@ This app has been featured on:
 * KHOU: https://twitter.com/KHOU/status/1446477984169439235
 * Fox 26 News: https://www.fox26houston.com/video/980037
 
-Note for Aug 25: I have updated the explanatory text to make it a little more approachable.
+Note for Aug 24: I have updated the explanatory text to make it a little more approachable.
 
 ## Data and Apps
 
