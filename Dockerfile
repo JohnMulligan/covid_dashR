@@ -1,4 +1,4 @@
-FROM plotly/heroku-docker-r:3.6.2_heroku18 as base
+FROM plotly/heroku-docker-r:3.6.3_heroku18 as base
 
 # install dependencies with init.R
 COPY init.R /app/init.R
