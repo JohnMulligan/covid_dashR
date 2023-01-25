@@ -6,14 +6,12 @@ This repo contains 3 builds of a Plotly app in R for quantifying covid-related e
 
 It also contains a Dockerfile for building the environment for local and remote deployment.
 
-Data is current for January 18, 2023.
+Data is current for January 25, 2023.
 
 This app has been featured on:
 
 * KHOU: https://twitter.com/KHOU/status/1446477984169439235
 * Fox 26 News: https://www.fox26houston.com/video/980037
-
-Note for Aug 24: I have updated the explanatory text to make it a little more approachable.
 
 ## Data and Apps
 
