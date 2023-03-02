@@ -12,6 +12,7 @@ library(dplyr)
 fig <- plot_ly()
 
 cause_and_jurisdiction <-filter(counts,`Type`==weighted,`Jurisdiction` %in% jurisdiction,`Cause Subgroup` %in% cause)
+cause_and_jurisdiction$`Week Ending Date` <- as.Date(cause_and_jurisdiction$`Week Ending Date`,origin='01/01/1970',format="%m/%d/%y")
 
 observed <- filter(cause_and_jurisdiction,`Year`>=2020)
 observed <- observed %>% select(`Number of Deaths`,`Week`,`Week Ending Date`,`Year`)

@@ -22,7 +22,7 @@ steps_back_slider_opts<-list()
 idx<-0
 wed<-week_ending_dates[(length(week_ending_dates)-max_steps_back):length(week_ending_dates)]
 for(i in wed){
-	d<-as.Date(i,origin='1970-01-01')
+	d<-as.Date(i,origin='01/01/1970',format="%m/%d/%y")
 	steps_back_slider_opts[[length(steps_back_slider_opts)+1]]<-list(label=d,value=idx)
 	idx<-idx+1
 }
@@ -71,7 +71,7 @@ app$layout(
 			htmlH1('Excess Mortality and COVID-19'),
 			htmlP('Developed in partnership between the CRC and Medical Futures Lab at Rice.'),
 			htmlP('Please contact jcm10@rice.edu with any questions'),
-			htmlA('Data updated February 22, 2023.', href="https://data.cdc.gov/NCHS/Weekly-Counts-of-Death-by-Jurisdiction-and-Select-/u6jv-9ijr"),
+			htmlA('Data updated March 1, 2023.', href="https://data.cdc.gov/NCHS/Weekly-Counts-of-Death-by-Jurisdiction-and-Select-/u6jv-9ijr"),
 			htmlBr(),
 			htmlA("Read more about this app on the Medical Futures blog.", href="https://mfl.rice.edu/covid-19-excess-mortality-data-visualization")
 		)),
